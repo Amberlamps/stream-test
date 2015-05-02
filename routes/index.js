@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var es = require('event-stream');
 var JSONStream = require('JSONStream');
-var fs = require('fs');
 var MongoClient = require('mongodb').MongoClient;
 
 var stream = require('stream');
@@ -12,9 +11,10 @@ var Transform = stream.Transform || require('readable-stream').Transform;
 /* GET home page. */
 router.get('/api', function(req, res, next) {
 
-  MongoClient.connect('mongodb://localhost:27017/youtube', function(err, db) {
+  MongoClient.connect('mongodb://127.0.0.1:27017/klatschUndTratsch', function(err, db) {
 
     if (err) {
+      console.log(err);
       return next(err);
     }
 
@@ -23,12 +23,7 @@ router.get('/api', function(req, res, next) {
 
     var prevChunk = null;
 
-    //fs.createReadStream('./files/all.csv')
-    db.collection('channel').find({}).limit(10)
-    //db.collection('channel').find({})
-    //.pipe(es.split())
-    //.pipe(DelayStream(2000))
-    //.pipe(CreateJSONObject())
+    db.collection('urls').find({})
     .on('data', function(data) {
       if (prevChunk) {
         res.write(JSON.stringify(prevChunk) + ',');
@@ -40,22 +35,7 @@ router.get('/api', function(req, res, next) {
         res.write(JSON.stringify(prevChunk));
       }
       res.end(']}');
-      console.log('done');
     });
-
-    // db.collection('channel').find({}).stream({
-    //   transform: function(doc) { 
-    //     return JSON.stringify(doc);
-    //   }
-    // })
-    // .pipe(DelayStream(1000))
-    // .on('data', function(data) {
-    //   res.write(data.toString());
-    // })
-    // .on('end', function() {
-    //   res.end();
-    //   db.close();
-    // });
 
   });
 
