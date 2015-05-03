@@ -8,36 +8,108 @@ var stream = require('stream');
 var util = require('util');
 var Transform = stream.Transform || require('readable-stream').Transform;
 
+var database = null;
+var cb_queue = [];
+
+MongoClient.connect(process.env.MONGOLAB_URI, function(err, db) {
+
+  if (err) {
+    console.log(err);
+    return next(err);
+  }
+
+  database = db;
+
+  cb_queue.forEach(function(cb) {
+    cb();
+  });
+
+});
+
 /* GET home page. */
-router.get('/api', function(req, res, next) {
+router.get('/api/:type?', function(req, res, next) {
 
-  MongoClient.connect('mongodb://127.0.0.1:27017/klatschUndTratsch', function(err, db) {
+  var type = req.params.type;
+  var items = +req.query.items || 100000;
+  console.log(items);
+  if (items > 100000) {
+    items = 100000;
+  } else if (items < 1) {
+    items = 1;
+  }
 
-    if (err) {
-      console.log(err);
-      return next(err);
+  if (!type) {
+    type = 'stream';
+  }
+
+  if (type === 'stream') {
+    return getUsersByStream();
+  }
+
+  if (type === 'callback') {
+    return getUsersByCallback();
+  }
+
+  res.json();
+
+  function getUsersByStream() {
+
+    function getUsers() {
+
+      var prevChunk = null;
+
+      database.collection('users').find({}).limit(items)
+      .on('data', function(data) {
+        if (prevChunk) {
+          res.write(JSON.stringify(prevChunk) + ',');
+        }
+        prevChunk = data;
+      })
+      .on('end', function() {
+        if (prevChunk) {
+          res.write(JSON.stringify(prevChunk));
+        }
+        res.end(']}');
+      });
+
     }
 
     res.set('Content-Type', 'application/json');
     res.write('{"data":[');
 
-    var prevChunk = null;
+    if (database) {
+      getUsers();
+    } else {
+      cb_queue.push(getUsers);
+    }
 
-    db.collection('urls').find({})
-    .on('data', function(data) {
-      if (prevChunk) {
-        res.write(JSON.stringify(prevChunk) + ',');
-      }
-      prevChunk = data;
-    })
-    .on('end', function() {
-      if (prevChunk) {
-        res.write(JSON.stringify(prevChunk));
-      }
-      res.end(']}');
-    });
+  }
 
-  });
+  function getUsersByCallback() {
+
+    function getUsers() {
+
+      var prevChunk = null;
+
+      database.collection('users').find({}).limit(items).toArray(function(err, data) {
+
+        if (err) {
+          return next(err);
+        }
+
+        res.json({ data: data });
+
+      });
+
+    }
+
+    if (database) {
+      getUsers();
+    } else {
+      cb_queue.push(getUsers);
+    }
+
+  }
 
 });
 

@@ -1,5 +1,67 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  .test-case
+    .test-container
+      .test-title jQuery/callback
+      .test-results
+        .test-item
+          .test-key First paint:
+          .test-value.test-first 0 ms
+        .test-item
+          .test-key Last paint:
+          .test-value.test-last 0 ms
+        .test-item
+          .test-key Last paint:
+          input(type='text', value='100000').test-value.test-items
+      .test-buttons
+        input.test-button(data-method='jQuery', data-url='callback', value='Run Test', type='button')
+      ul.test-data
+  .test-case
+    .test-container
+      .test-title oboe/callback
+      .test-results
+        .test-item
+          .test-key First paint:
+          .test-value.test-first 0 ms
+        .test-item
+          .test-key Last paint:
+          .test-value.test-last 0 ms
+        .test-item
+          .test-key Last paint:
+          input(type='text', value='100000').test-value.test-items
+      .test-buttons
+        input.test-button(data-method='oboe', data-url='callback', value='Run Test', type='button')
+      ul.test-data
+  .test-case
+    .test-container
+      .test-title jquery/cursor stream
+      .test-results
+        .test-item
+          .test-key First paint:
+          .test-value.test-first 0 ms
+        .test-item
+          .test-key Last paint:
+          .test-value.test-last 0 ms
+        .test-item
+          .test-key Last paint:
+          input(type='text', value='100000').test-value.test-items
+      .test-buttons
+        input.test-button(data-method='jQuery', data-url='stream', value='Run Test', type='button')
+      ul.test-data
+  .test-case
+    .test-container
+      .test-title oboe/cursor stream
+      .test-results
+        .test-item
+          .test-key First paint:
+          .test-value.test-first
+        .test-item
+          .test-key Last paint:
+          .test-value.test-last
+        .test-item
+          .test-key Last paint:
+          input(type='text', value='100000').test-value.test-items
+      .test-buttons
+        input.test-button(data-method='oboe', data-url='stream', value='Run Test', type='button')
+      ul.test-data
